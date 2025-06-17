@@ -10,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"onioncli/pkg/api"
+	"onioncli/pkg/collections"
 	"onioncli/pkg/history"
 )
 
@@ -20,6 +21,8 @@ const (
 	StateRequestBuilder AppState = iota
 	StateResponse
 	StateHistory
+	StateCollections
+	StateEnvironments
 	StateSettings
 )
 
@@ -54,6 +57,11 @@ type Model struct {
 	authManager *api.AuthManager
 	authDialog  AuthDialog
 	authConfig  *api.AuthConfig
+
+	// Collections and environments
+	collectionsManager *collections.Manager
+	collectionsViewer  CollectionsViewer
+	environmentsViewer EnvironmentsViewer
 
 	// History manager
 	historyManager *history.Manager
@@ -106,6 +114,12 @@ func NewModel() (*Model, error) {
 	// Initialize error analyzer
 	errorAnalyzer := api.NewErrorAnalyzer()
 
+	// Initialize collections manager
+	collectionsManager, err := collections.NewManager()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create collections manager: %w", err)
+	}
+
 	// Initialize history manager
 	historyManager, err := history.NewManager()
 	if err != nil {
@@ -149,25 +163,28 @@ func NewModel() (*Model, error) {
 	bodyArea.SetHeight(10)
 
 	model := &Model{
-		state:             StateRequestBuilder,
-		focusedField:      FocusURL,
-		urlInput:          urlInput,
-		methodList:        methodList,
-		headersArea:       headersArea,
-		bodyArea:          bodyArea,
-		client:            client,
-		authManager:       authManager,
-		authDialog:        NewAuthDialog(80, 24),
-		historyManager:    historyManager,
-		historyViewer:     NewHistoryViewer(historyManager, 80, 24),
-		saveDialog:        NewSaveRequestDialog(),
-		responseViewer:    NewResponseViewer(80, 24),
-		errorAnalyzer:     errorAnalyzer,
-		errorViewer:       NewErrorViewer(80, 24),
-		errorAlert:        NewErrorAlert(),
-		loadingSpinner:    NewLoadingSpinner(),
-		statusIndicator:   NewStatusIndicator(),
-		keyboardShortcuts: NewKeyboardShortcuts(),
+		state:              StateRequestBuilder,
+		focusedField:       FocusURL,
+		urlInput:           urlInput,
+		methodList:         methodList,
+		headersArea:        headersArea,
+		bodyArea:           bodyArea,
+		client:             client,
+		authManager:        authManager,
+		authDialog:         NewAuthDialog(80, 24),
+		collectionsManager: collectionsManager,
+		collectionsViewer:  NewCollectionsViewer(collectionsManager, 80, 24),
+		environmentsViewer: NewEnvironmentsViewer(collectionsManager, 80, 24),
+		historyManager:     historyManager,
+		historyViewer:      NewHistoryViewer(historyManager, 80, 24),
+		saveDialog:         NewSaveRequestDialog(),
+		responseViewer:     NewResponseViewer(80, 24),
+		errorAnalyzer:      errorAnalyzer,
+		errorViewer:        NewErrorViewer(80, 24),
+		errorAlert:         NewErrorAlert(),
+		loadingSpinner:     NewLoadingSpinner(),
+		statusIndicator:    NewStatusIndicator(),
+		keyboardShortcuts:  NewKeyboardShortcuts(),
 	}
 
 	return model, nil
@@ -189,6 +206,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.responseViewer.Resize(msg.Width, msg.Height)
 		m.historyViewer.Resize(msg.Width, msg.Height)
+		m.collectionsViewer.Resize(msg.Width, msg.Height)
+		m.environmentsViewer.Resize(msg.Width, msg.Height)
 		m.authDialog.Resize(msg.Width, msg.Height)
 		m.errorViewer.Resize(msg.Width, msg.Height)
 		return m, nil
@@ -215,6 +234,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "h":
 			if m.state == StateRequestBuilder {
 				m.state = StateHistory
+				return m, nil
+			}
+
+		case "c":
+			if m.state == StateRequestBuilder {
+				m.state = StateCollections
+				return m, nil
+			}
+
+		case "v":
+			if m.state == StateRequestBuilder {
+				m.state = StateEnvironments
 				return m, nil
 			}
 
@@ -294,6 +325,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.state == StateHistory {
 				m.state = StateRequestBuilder
 				return m, nil
+			} else if m.state == StateCollections {
+				m.state = StateRequestBuilder
+				return m, nil
+			} else if m.state == StateEnvironments {
+				m.state = StateRequestBuilder
+				return m, nil
 			}
 			m.errorMessage = ""
 			m.statusMessage = ""
@@ -321,6 +358,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case AuthErrorMsg:
 		m.errorMessage = fmt.Sprintf("Authentication error: %v", msg.err)
 		m.statusMessage = ""
+		return m, nil
+
+	case LoadRequestMsg:
+		// Load request from collection
+		req := msg.request
+		m.urlInput.SetValue(req.URL)
+
+		// Set method
+		for i, item := range m.methodList.Items() {
+			if httpMethod, ok := item.(HTTPMethod); ok && httpMethod.name == req.Method {
+				m.methodList.Select(i)
+				break
+			}
+		}
+
+		// Set headers
+		var headerLines []string
+		for key, value := range req.Headers {
+			headerLines = append(headerLines, fmt.Sprintf("%s: %s", key, value))
+		}
+		m.headersArea.SetValue(strings.Join(headerLines, "\n"))
+
+		// Set body
+		m.bodyArea.SetValue(req.Body)
+
+		m.statusMessage = fmt.Sprintf("✅ Loaded request: %s", req.Name)
+		m.state = StateRequestBuilder
+		return m, nil
+
+	case EnvironmentChangedMsg:
+		// Environment changed
+		m.statusMessage = fmt.Sprintf("✅ Environment changed to: %s", msg.environment.Name)
 		return m, nil
 
 	case RequestSuccessMsg:
@@ -378,6 +447,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	case StateHistory:
 		m.historyViewer, cmd = m.historyViewer.Update(msg)
+		cmds = append(cmds, cmd)
+	case StateCollections:
+		m.collectionsViewer, cmd = m.collectionsViewer.Update(msg)
+		cmds = append(cmds, cmd)
+	case StateEnvironments:
+		m.environmentsViewer, cmd = m.environmentsViewer.Update(msg)
 		cmds = append(cmds, cmd)
 	default:
 		// Update focused component in request builder
@@ -508,6 +583,9 @@ func (m Model) sendRequest() (Model, tea.Cmd) {
 	if body != "" {
 		req.SetBody(body)
 	}
+
+	// Process request with variable substitution
+	req = m.collectionsManager.ProcessRequest(req)
 
 	// Apply authentication if configured
 	if m.authConfig != nil {
