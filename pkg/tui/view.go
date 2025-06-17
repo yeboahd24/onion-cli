@@ -121,8 +121,8 @@ func (m Model) renderEnvironments() string {
 func (m Model) renderRequestBuilder() string {
 	var sections []string
 
-	// Title
-	title := titleStyle.Render("OnionCLI - API Client for .onion Services")
+	// Title (more compact)
+	title := titleStyle.Render("OnionCLI - .onion API Client")
 	sections = append(sections, title)
 
 	// URL input
@@ -202,7 +202,7 @@ func (m Model) renderRequestBuilder() string {
 	help := helpStyle.Render(m.renderHelp())
 	sections = append(sections, help)
 
-	return strings.Join(sections, "\n\n")
+	return strings.Join(sections, "\n")
 }
 
 // renderResponse renders the response view using the response viewer
@@ -235,16 +235,16 @@ func (m Model) renderHelp() string {
 
 	switch m.focusedField {
 	case FocusURL:
-		return fmt.Sprintf("Enter a .onion URL. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, s to save, Enter to send | %s | %s", authStatus, baseHelp)
+		return fmt.Sprintf("Enter a .onion URL. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, s to save, Enter/Ctrl+Enter to send | %s | %s", authStatus, baseHelp)
 	case FocusMethod:
-		return fmt.Sprintf("Select HTTP method with ↑/↓ arrows. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history | %s | %s", authStatus, baseHelp)
+		return fmt.Sprintf("Select HTTP method with ↑/↓ arrows. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, Ctrl+Enter to send | %s | %s", authStatus, baseHelp)
 	case FocusHeaders:
-		return fmt.Sprintf("Enter headers in 'key: value' format, one per line. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history | %s | %s", authStatus, baseHelp)
+		return fmt.Sprintf("Enter headers in 'key: value' format, one per line. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, Ctrl+Enter to send | %s | %s", authStatus, baseHelp)
 	case FocusBody:
-		return fmt.Sprintf("Enter request body (JSON, XML, or plain text). Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history | %s | %s", authStatus, baseHelp)
+		return fmt.Sprintf("Enter request body (JSON, XML, or plain text). Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, Ctrl+Enter to send | %s | %s", authStatus, baseHelp)
 	case FocusSubmit:
 		return fmt.Sprintf("Press Enter to send the request. Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, s to save | %s | %s", authStatus, baseHelp)
 	default:
-		return fmt.Sprintf("Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, s to save, Enter to send request, q/Ctrl+C to quit | %s | %s", authStatus, baseHelp)
+		return fmt.Sprintf("Tab/Shift+Tab to navigate, a for auth, c for collections, v for environments, h for history, s to save, Ctrl+Enter to send request, q/Ctrl+C to quit | %s | %s", authStatus, baseHelp)
 	}
 }

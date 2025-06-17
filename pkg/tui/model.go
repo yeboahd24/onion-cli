@@ -154,13 +154,13 @@ func NewModel() (*Model, error) {
 	headersArea := textarea.New()
 	headersArea.Placeholder = "Headers (key: value format, one per line)\nUser-Agent: OnionCLI/1.0\nContent-Type: application/json"
 	headersArea.SetWidth(80)
-	headersArea.SetHeight(6)
+	headersArea.SetHeight(3)
 
 	// Initialize body textarea
 	bodyArea := textarea.New()
 	bodyArea.Placeholder = "Request body (JSON, XML, or plain text)"
 	bodyArea.SetWidth(80)
-	bodyArea.SetHeight(10)
+	bodyArea.SetHeight(5)
 
 	model := &Model{
 		state:              StateRequestBuilder,
@@ -211,9 +211,65 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.authDialog.Resize(msg.Width, msg.Height)
 		m.errorViewer.Resize(msg.Width, msg.Height)
 		return m, nil
-
 	case tea.KeyMsg:
-		// Handle auth dialog first
+		// Handle global shortcuts first, but only if not typing in input fields
+		if m.state == StateRequestBuilder {
+			// Check if we're currently typing in an input field
+			isTypingInInput := (m.focusedField == FocusURL && m.urlInput.Focused()) ||
+				(m.focusedField == FocusHeaders && m.headersArea.Focused()) ||
+				(m.focusedField == FocusBody && m.bodyArea.Focused())
+
+			// Handle Enter/Ctrl+Enter for sending requests
+			if msg.String() == "ctrl+enter" ||
+				(msg.String() == "enter" && (m.focusedField == FocusURL || m.focusedField == FocusSubmit)) {
+				if !m.loading {
+					return m.sendRequest()
+				}
+			}
+
+			// Handle global shortcuts only if NOT typing in input fields
+			if !isTypingInInput {
+				switch msg.String() {
+				case "h":
+					m.state = StateHistory
+					return m, nil
+				case "c":
+					m.state = StateCollections
+					return m, nil
+				case "v":
+					m.state = StateEnvironments
+					return m, nil
+				case "a":
+					m.authDialog.Show()
+					return m, nil
+				case "s":
+					if m.currentRequest != nil {
+						m.saveDialog.Show()
+					}
+					return m, nil
+				case "r":
+					if m.currentRequest != nil && !m.loading {
+						m.statusIndicator.Show("Retrying request...", StatusLoading)
+						return m.sendRequest()
+					}
+				case "?":
+					m.keyboardShortcuts.Toggle()
+					return m, nil
+				case "e":
+					if m.errorAlert.IsVisible() {
+						diagnosticError := &api.DiagnosticError{
+							Type:        m.errorAlert.errorType,
+							Message:     m.errorAlert.message,
+							Suggestions: m.errorAlert.suggestions,
+						}
+						m.errorViewer.Show(diagnosticError)
+						return m, nil
+					}
+				}
+			}
+		}
+
+		// Handle auth dialog
 		if m.authDialog.visible {
 			m.authDialog, cmd = m.authDialog.Update(msg)
 			cmds = append(cmds, cmd)
@@ -227,66 +283,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
+		// Handle remaining global shortcuts
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-
-		case "h":
-			if m.state == StateRequestBuilder {
-				m.state = StateHistory
-				return m, nil
-			}
-
-		case "c":
-			if m.state == StateRequestBuilder {
-				m.state = StateCollections
-				return m, nil
-			}
-
-		case "v":
-			if m.state == StateRequestBuilder {
-				m.state = StateEnvironments
-				return m, nil
-			}
-
-		case "s":
-			if m.state == StateRequestBuilder && m.currentRequest != nil {
-				m.saveDialog.Show()
-				return m, nil
-			}
-
-		case "a":
-			if m.state == StateRequestBuilder {
-				m.authDialog.Show()
-				return m, nil
-			}
-
-		case "e":
-			if m.errorAlert.IsVisible() {
-				// Show detailed error view
-				if m.errorAlert.visible {
-					// Create a diagnostic error from the alert
-					diagnosticError := &api.DiagnosticError{
-						Type:        m.errorAlert.errorType,
-						Message:     m.errorAlert.message,
-						Suggestions: m.errorAlert.suggestions,
-					}
-					m.errorViewer.Show(diagnosticError)
-					return m, nil
-				}
-			}
-
-		case "r":
-			// Retry last request
-			if m.currentRequest != nil && !m.loading {
-				m.statusIndicator.Show("Retrying request...", StatusLoading)
-				return m.sendRequest()
-			}
-
-		case "?":
-			// Toggle keyboard shortcuts help
-			m.keyboardShortcuts.Toggle()
-			return m, nil
 
 		case "ctrl+s":
 			// Quick save shortcut
@@ -306,9 +306,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
-			if m.state == StateRequestBuilder && m.focusedField == FocusSubmit {
-				return m.sendRequest()
-			} else if m.state == StateHistory {
+			// Handle enter key in other states (not request builder, which is handled above)
+			if m.state == StateHistory {
 				if entry := m.historyViewer.GetSelectedEntry(); entry != nil {
 					m.loadFromHistory(entry)
 					m.state = StateRequestBuilder
