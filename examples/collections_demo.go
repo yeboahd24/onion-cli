@@ -39,12 +39,12 @@ func main() {
 
 	// Create a new environment for testing
 	fmt.Println("Creating test environments...")
-	
+
 	// Development environment
 	devVars := map[string]string{
-		"base_url":    "http://dev-api.example.onion:8080",
-		"api_key":     "dev-key-123",
-		"timeout":     "30",
+		"base_url":   "http://dev-api.example.onion:8080",
+		"api_key":    "dev-key-123",
+		"timeout":    "30",
 		"debug_mode": "true",
 	}
 	devEnv := manager.CreateEnvironment("Development", "Development environment for .onion APIs", devVars)
@@ -52,9 +52,9 @@ func main() {
 
 	// Production environment
 	prodVars := map[string]string{
-		"base_url":    "http://prod-api.example.onion",
-		"api_key":     "prod-key-456",
-		"timeout":     "60",
+		"base_url":   "http://prod-api.example.onion",
+		"api_key":    "prod-key-456",
+		"timeout":    "60",
 		"debug_mode": "false",
 	}
 	prodEnv := manager.CreateEnvironment("Production", "Production environment for .onion APIs", prodVars)
@@ -62,9 +62,9 @@ func main() {
 
 	// Test environment
 	testVars := map[string]string{
-		"base_url":    "http://test-api.example.onion:3000",
-		"api_key":     "test-key-789",
-		"timeout":     "15",
+		"base_url":   "http://test-api.example.onion:3000",
+		"api_key":    "test-key-789",
+		"timeout":    "15",
 		"debug_mode": "true",
 	}
 	testEnv := manager.CreateEnvironment("Testing", "Testing environment for .onion APIs", testVars)
@@ -161,20 +161,20 @@ func main() {
 	fmt.Println("Testing request processing with variable substitution...")
 	if len(collections) > 0 && len(collections[0].Requests) > 0 {
 		originalReq := &collections[0].Requests[0]
-		
+
 		// Convert to API request
 		apiReq := originalReq.ToRequest()
 		fmt.Printf("Original request URL: %s\n", apiReq.URL)
-		
+
 		// Process with variable substitution
 		processedReq := manager.ProcessRequest(apiReq)
 		fmt.Printf("Processed request URL: %s\n", processedReq.URL)
-		
+
 		fmt.Printf("Original headers:\n")
 		for key, value := range apiReq.Headers {
 			fmt.Printf("  %s: %s\n", key, value)
 		}
-		
+
 		fmt.Printf("Processed headers:\n")
 		for key, value := range processedReq.Headers {
 			fmt.Printf("  %s: %s\n", key, value)

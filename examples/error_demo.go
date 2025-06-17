@@ -81,7 +81,7 @@ func main() {
 			fmt.Printf("   Diagnosed Type: %s\n", diagnosticError.Type)
 			fmt.Printf("   Diagnostic Message: %s\n", diagnosticError.Message)
 			fmt.Printf("   Retryable: %v\n", diagnosticError.IsRetryable())
-			
+
 			if len(diagnosticError.Suggestions) > 0 {
 				fmt.Printf("   Suggestions:\n")
 				for j, suggestion := range diagnosticError.Suggestions {
@@ -96,7 +96,7 @@ func main() {
 		} else {
 			fmt.Printf("   No diagnostic information available\n")
 		}
-		
+
 		fmt.Println()
 	}
 
@@ -106,7 +106,7 @@ func main() {
 		errors.New("dial tcp 127.0.0.1:9050: connect: connection refused"),
 		"http://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion",
 	)
-	
+
 	if torError != nil {
 		fmt.Println("Diagnostic Summary:")
 		fmt.Println("==================")
@@ -115,7 +115,7 @@ func main() {
 
 	// Test error type detection
 	fmt.Println("\nTesting error type detection...")
-	
+
 	errorTests := []struct {
 		err      error
 		expected api.ErrorType
@@ -135,7 +135,7 @@ func main() {
 			if diagnostic.Type != test.expected {
 				status = "❌"
 			}
-			fmt.Printf("%s Error: '%v' -> Detected: %s (Expected: %s)\n", 
+			fmt.Printf("%s Error: '%v' -> Detected: %s (Expected: %s)\n",
 				status, test.err, diagnostic.Type, test.expected)
 		}
 	}

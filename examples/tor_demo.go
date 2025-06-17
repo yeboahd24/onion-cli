@@ -34,7 +34,7 @@ func main() {
 	// Test .onion URL validation
 	fmt.Println("\nTesting .onion URL validation...")
 	testURLs := []string{
-		"http://3g2upl4pq6kufc4m.onion",                                           // DuckDuckGo (v2)
+		"http://3g2upl4pq6kufc4m.onion",                                          // DuckDuckGo (v2)
 		"https://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion", // Facebook (v3)
 		"http://google.com",                                                      // Regular URL
 		"invalid-url",                                                            // Invalid URL
@@ -43,7 +43,7 @@ func main() {
 	for _, url := range testURLs {
 		isOnion := api.IsOnionURL(url)
 		fmt.Printf("  %s -> .onion: %v", url, isOnion)
-		
+
 		if isOnion {
 			if err := api.ValidateOnionURL(url); err != nil {
 				fmt.Printf(" (validation failed: %v)", err)
@@ -58,7 +58,7 @@ func main() {
 	fmt.Println("\nTesting request creation...")
 	req := api.NewRequest("GET", "http://3g2upl4pq6kufc4m.onion")
 	req.SetHeader("User-Agent", "OnionCLI/1.0")
-	
+
 	if err := req.Validate(); err != nil {
 		fmt.Printf("❌ Request validation failed: %v\n", err)
 	} else {

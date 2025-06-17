@@ -56,10 +56,10 @@ func (rv ResponseViewer) View() string {
 
 	// Header with response summary
 	header := rv.renderResponseHeader()
-	
+
 	// Viewport with response details
 	content := rv.viewport.View()
-	
+
 	// Footer with navigation help
 	footer := rv.renderFooter()
 
@@ -98,7 +98,7 @@ func (rv ResponseViewer) renderFooter() string {
 	help := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#666666")).
 		Render("↑/↓ scroll • esc back to request builder • q quit")
-	
+
 	return help
 }
 
@@ -119,9 +119,9 @@ func (rv ResponseViewer) formatResponse(response *api.Response) string {
 			Foreground(lipgloss.Color("#50FA7B")).
 			Bold(true).
 			Render("Headers:"))
-		
+
 		for key, value := range response.Headers {
-			headerLine := fmt.Sprintf("  %s: %s", 
+			headerLine := fmt.Sprintf("  %s: %s",
 				lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Render(key),
 				value)
 			sections = append(sections, headerLine)
@@ -135,7 +135,7 @@ func (rv ResponseViewer) formatResponse(response *api.Response) string {
 			Foreground(lipgloss.Color("#50FA7B")).
 			Bold(true).
 			Render("Response Body:"))
-		
+
 		// Try to pretty-print JSON
 		prettyBody, err := response.PrettyPrintJSON()
 		if err != nil {
@@ -162,13 +162,13 @@ func (rv ResponseViewer) formatResponse(response *api.Response) string {
 func (rv ResponseViewer) highlightJSON(jsonStr string) string {
 	// Basic JSON highlighting - this is a simple implementation
 	// In a production app, you might want to use a proper JSON syntax highlighter
-	
+
 	lines := strings.Split(jsonStr, "\n")
 	var highlighted []string
-	
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		
+
 		// Highlight different JSON elements
 		if strings.Contains(line, ":") && (strings.Contains(line, "\"") || strings.Contains(line, "'")) {
 			// Key-value pairs
@@ -176,7 +176,7 @@ func (rv ResponseViewer) highlightJSON(jsonStr string) string {
 			if len(parts) == 2 {
 				key := lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Render(parts[0])
 				value := strings.TrimSpace(parts[1])
-				
+
 				// Highlight string values
 				if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
 					value = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C")).Render(value)
@@ -187,14 +187,14 @@ func (rv ResponseViewer) highlightJSON(jsonStr string) string {
 					// Null values
 					value = lipgloss.NewStyle().Foreground(lipgloss.Color("#6272A4")).Render(value)
 				}
-				
+
 				line = key + ":" + value
 			}
 		}
-		
+
 		highlighted = append(highlighted, line)
 	}
-	
+
 	return strings.Join(highlighted, "\n")
 }
 

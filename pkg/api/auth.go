@@ -13,22 +13,22 @@ import (
 type AuthType string
 
 const (
-	AuthNone        AuthType = "none"
-	AuthAPIKey      AuthType = "api_key"
-	AuthBearer      AuthType = "bearer"
-	AuthBasic       AuthType = "basic"
-	AuthCustom      AuthType = "custom"
+	AuthNone   AuthType = "none"
+	AuthAPIKey AuthType = "api_key"
+	AuthBearer AuthType = "bearer"
+	AuthBasic  AuthType = "basic"
+	AuthCustom AuthType = "custom"
 )
 
 // AuthConfig holds authentication configuration
 type AuthConfig struct {
-	Type     AuthType `json:"type"`
-	APIKey   string   `json:"api_key,omitempty"`
-	KeyName  string   `json:"key_name,omitempty"`
-	Location string   `json:"location,omitempty"` // "header" or "query"
-	Token    string   `json:"token,omitempty"`
-	Username string   `json:"username,omitempty"`
-	Password string   `json:"password,omitempty"`
+	Type     AuthType          `json:"type"`
+	APIKey   string            `json:"api_key,omitempty"`
+	KeyName  string            `json:"key_name,omitempty"`
+	Location string            `json:"location,omitempty"` // "header" or "query"
+	Token    string            `json:"token,omitempty"`
+	Username string            `json:"username,omitempty"`
+	Password string            `json:"password,omitempty"`
 	Custom   map[string]string `json:"custom,omitempty"`
 }
 
@@ -82,16 +82,16 @@ func (am *AuthManager) applyAPIKeyAuth(req *Request, config *AuthConfig) error {
 		if err != nil {
 			return fmt.Errorf("invalid URL: %w", err)
 		}
-		
+
 		query := u.Query()
 		query.Set(keyName, config.APIKey)
 		u.RawQuery = query.Encode()
 		req.URL = u.String()
-		
+
 	case "header", "":
 		// Add to headers (default)
 		req.SetHeader(keyName, config.APIKey)
-		
+
 	default:
 		return fmt.Errorf("invalid API key location: %s (use 'header' or 'query')", config.Location)
 	}
@@ -165,7 +165,7 @@ func (am *AuthManager) ValidateAuthConfig(config *AuthConfig) error {
 	switch config.Type {
 	case AuthNone:
 		return nil
-		
+
 	case AuthAPIKey:
 		if config.APIKey == "" {
 			return fmt.Errorf("API key is required")
@@ -173,22 +173,22 @@ func (am *AuthManager) ValidateAuthConfig(config *AuthConfig) error {
 		if config.Location != "" && config.Location != "header" && config.Location != "query" {
 			return fmt.Errorf("API key location must be 'header' or 'query'")
 		}
-		
+
 	case AuthBearer:
 		if config.Token == "" {
 			return fmt.Errorf("bearer token is required")
 		}
-		
+
 	case AuthBasic:
 		if config.Username == "" {
 			return fmt.Errorf("username is required for basic auth")
 		}
-		
+
 	case AuthCustom:
 		if len(config.Custom) == 0 {
 			return fmt.Errorf("custom headers are required")
 		}
-		
+
 	default:
 		return fmt.Errorf("unsupported authentication type: %s", config.Type)
 	}
@@ -232,7 +232,7 @@ func (am *AuthManager) CreateAuthConfigFromInput(authType AuthType, inputs map[s
 	switch authType {
 	case AuthNone:
 		return config, nil
-		
+
 	case AuthAPIKey:
 		config.APIKey = inputs["api_key"]
 		config.KeyName = inputs["key_name"]
@@ -240,14 +240,14 @@ func (am *AuthManager) CreateAuthConfigFromInput(authType AuthType, inputs map[s
 		if config.Location == "" {
 			config.Location = "header"
 		}
-		
+
 	case AuthBearer:
 		config.Token = inputs["token"]
-		
+
 	case AuthBasic:
 		config.Username = inputs["username"]
 		config.Password = inputs["password"]
-		
+
 	case AuthCustom:
 		config.Custom = make(map[string]string)
 		// Parse custom headers from input
@@ -268,7 +268,7 @@ func (am *AuthManager) CreateAuthConfigFromInput(authType AuthType, inputs map[s
 				}
 			}
 		}
-		
+
 	default:
 		return nil, fmt.Errorf("unsupported authentication type: %s", authType)
 	}
@@ -325,7 +325,7 @@ func (am *AuthManager) isSensitiveHeader(headerName string) bool {
 		"authorization", "x-api-key", "x-auth-token", "x-access-token",
 		"api-key", "auth-token", "access-token", "secret", "password",
 	}
-	
+
 	headerLower := strings.ToLower(headerName)
 	for _, s := range sensitive {
 		if strings.Contains(headerLower, s) {

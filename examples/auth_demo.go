@@ -91,9 +91,9 @@ func main() {
 	customConfig := &api.AuthConfig{
 		Type: api.AuthCustom,
 		Custom: map[string]string{
-			"X-Custom-Auth":   "custom-token-123",
-			"X-Client-ID":     "client-456",
-			"X-Request-ID":    "req-789",
+			"X-Custom-Auth": "custom-token-123",
+			"X-Client-ID":   "client-456",
+			"X-Request-ID":  "req-789",
 		},
 	}
 
@@ -108,11 +108,11 @@ func main() {
 
 	// Test validation
 	fmt.Println("\n6. Testing Authentication Validation")
-	
+
 	// Valid config
 	validConfig := &api.AuthConfig{
-		Type:   api.AuthBearer,
-		Token:  "valid-token",
+		Type:  api.AuthBearer,
+		Token: "valid-token",
 	}
 	if err := authManager.ValidateAuthConfig(validConfig); err != nil {
 		fmt.Printf("❌ Valid config failed validation: %v\n", err)
@@ -155,9 +155,9 @@ func main() {
 	// Test creating config from input
 	fmt.Println("\n9. Creating Config from Input")
 	inputs := map[string]string{
-		"api_key":   "test-key-123",
-		"key_name":  "X-Test-Key",
-		"location":  "header",
+		"api_key":  "test-key-123",
+		"key_name": "X-Test-Key",
+		"location": "header",
 	}
 
 	configFromInput, err := authManager.CreateAuthConfigFromInput(api.AuthAPIKey, inputs)

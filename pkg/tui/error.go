@@ -13,11 +13,11 @@ import (
 
 // ErrorViewer displays detailed error information and suggestions
 type ErrorViewer struct {
-	viewport    viewport.Model
-	error       *api.DiagnosticError
-	visible     bool
-	width       int
-	height      int
+	viewport viewport.Model
+	error    *api.DiagnosticError
+	visible  bool
+	width    int
+	height   int
 }
 
 // NewErrorViewer creates a new error viewer
@@ -57,7 +57,7 @@ func (ev ErrorViewer) Update(msg tea.Msg) (ErrorViewer, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -79,10 +79,10 @@ func (ev ErrorViewer) View() string {
 
 	// Header with error type and icon
 	header := ev.renderErrorHeader()
-	
+
 	// Viewport with error details
 	content := ev.viewport.View()
-	
+
 	// Footer with navigation help
 	footer := ev.renderFooter()
 
@@ -98,7 +98,7 @@ func (ev ErrorViewer) renderErrorHeader() string {
 	// Choose icon and color based on error type
 	var icon string
 	var color lipgloss.Color
-	
+
 	switch ev.error.Type {
 	case api.ErrorTypeTor:
 		icon = "🧅"
@@ -121,7 +121,7 @@ func (ev ErrorViewer) renderErrorHeader() string {
 	}
 
 	title := fmt.Sprintf("%s %s Error", icon, strings.Title(string(ev.error.Type)))
-	
+
 	return lipgloss.NewStyle().
 		Foreground(color).
 		Bold(true).
@@ -133,7 +133,7 @@ func (ev ErrorViewer) renderFooter() string {
 	help := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#666666")).
 		Render("↑/↓ scroll • esc/q close error details")
-	
+
 	return help
 }
 
@@ -178,7 +178,7 @@ func (ev ErrorViewer) formatError(err *api.DiagnosticError) string {
 			Foreground(lipgloss.Color("#50FA7B")).
 			Bold(true).
 			Render("💡 Suggestions:"))
-		
+
 		for i, suggestion := range err.Suggestions {
 			suggestionText := fmt.Sprintf("  %d. %s", i+1, suggestion)
 			sections = append(sections, suggestionText)
@@ -285,7 +285,7 @@ func (ea *ErrorAlert) Show(err *api.DiagnosticError) {
 		ea.Hide()
 		return
 	}
-	
+
 	ea.message = err.Message
 	ea.errorType = err.Type
 	ea.suggestions = err.Suggestions
@@ -328,7 +328,7 @@ func (ea ErrorAlert) View() string {
 		BorderForeground(color)
 
 	content := fmt.Sprintf("❌ %s", ea.message)
-	
+
 	// Add first suggestion if available
 	if len(ea.suggestions) > 0 {
 		content += fmt.Sprintf("\n💡 %s", ea.suggestions[0])

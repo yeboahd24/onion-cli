@@ -24,7 +24,7 @@ func main() {
 	cfg := manager.Get()
 	fmt.Println("Current Configuration:")
 	fmt.Println("=====================")
-	
+
 	// Tor settings
 	fmt.Printf("Tor Settings:\n")
 	fmt.Printf("  Enabled: %v\n", cfg.Tor.Enabled)
@@ -68,7 +68,7 @@ func main() {
 
 	// Test configuration updates
 	fmt.Println("Testing configuration updates...")
-	
+
 	// Update Tor settings
 	fmt.Println("1. Updating Tor settings...")
 	manager.UpdateTorSettings(true, "127.0.0.1", 9051, 45)
@@ -95,7 +95,7 @@ func main() {
 	fmt.Println("4. Testing default headers management...")
 	manager.AddDefaultHeader("X-Custom-Header", "CustomValue")
 	manager.AddDefaultHeader("Authorization", "Bearer token123")
-	
+
 	headers := manager.GetDefaultHeaders()
 	fmt.Printf("   Updated headers (%d total):\n", len(headers))
 	for key, value := range headers {
@@ -141,16 +141,16 @@ func main() {
 	// Test export/import
 	fmt.Println("8. Testing export/import...")
 	exportFile := "/tmp/onioncli_config_export.yaml"
-	
+
 	if err := manager.Export(exportFile); err != nil {
 		fmt.Printf("   ❌ Failed to export config: %v\n", err)
 	} else {
 		fmt.Printf("   ✅ Configuration exported to %s\n", exportFile)
-		
+
 		// Check if file exists
 		if _, err := os.Stat(exportFile); err == nil {
 			fmt.Printf("   ✅ Export file exists and is readable\n")
-			
+
 			// Clean up
 			os.Remove(exportFile)
 			fmt.Printf("   🧹 Cleaned up export file\n")

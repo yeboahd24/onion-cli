@@ -13,35 +13,35 @@ import (
 type Config struct {
 	// Tor settings
 	Tor TorConfig `mapstructure:"tor" json:"tor"`
-	
+
 	// HTTP settings
 	HTTP HTTPConfig `mapstructure:"http" json:"http"`
-	
+
 	// UI settings
 	UI UIConfig `mapstructure:"ui" json:"ui"`
-	
+
 	// Default headers
 	DefaultHeaders map[string]string `mapstructure:"default_headers" json:"default_headers"`
-	
+
 	// History settings
 	History HistoryConfig `mapstructure:"history" json:"history"`
 }
 
 // TorConfig holds Tor-specific configuration
 type TorConfig struct {
-	Enabled     bool   `mapstructure:"enabled" json:"enabled"`
-	ProxyAddr   string `mapstructure:"proxy_addr" json:"proxy_addr"`
-	ProxyPort   int    `mapstructure:"proxy_port" json:"proxy_port"`
-	Timeout     int    `mapstructure:"timeout" json:"timeout"` // seconds
-	AutoDetect  bool   `mapstructure:"auto_detect" json:"auto_detect"`
+	Enabled    bool   `mapstructure:"enabled" json:"enabled"`
+	ProxyAddr  string `mapstructure:"proxy_addr" json:"proxy_addr"`
+	ProxyPort  int    `mapstructure:"proxy_port" json:"proxy_port"`
+	Timeout    int    `mapstructure:"timeout" json:"timeout"` // seconds
+	AutoDetect bool   `mapstructure:"auto_detect" json:"auto_detect"`
 }
 
 // HTTPConfig holds HTTP-specific configuration
 type HTTPConfig struct {
-	Timeout         int  `mapstructure:"timeout" json:"timeout"`         // seconds
-	FollowRedirects bool `mapstructure:"follow_redirects" json:"follow_redirects"`
-	MaxRedirects    int  `mapstructure:"max_redirects" json:"max_redirects"`
-	VerifySSL       bool `mapstructure:"verify_ssl" json:"verify_ssl"`
+	Timeout         int    `mapstructure:"timeout" json:"timeout"` // seconds
+	FollowRedirects bool   `mapstructure:"follow_redirects" json:"follow_redirects"`
+	MaxRedirects    int    `mapstructure:"max_redirects" json:"max_redirects"`
+	VerifySSL       bool   `mapstructure:"verify_ssl" json:"verify_ssl"`
 	UserAgent       string `mapstructure:"user_agent" json:"user_agent"`
 }
 
